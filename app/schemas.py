@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import datetime as dt
 
-
+### Create models
 class SpecializationModel(BaseModel):
     name: str
 
@@ -39,3 +39,8 @@ class AttendanceModel(BaseModel):
     id_attendance_log: int
     id_student: int
     status: str
+
+
+### Delete entities
+class DeleteByIdModel(BaseModel):
+    id: int

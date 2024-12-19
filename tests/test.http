@@ -4,3 +4,20 @@ Content-Type: application/json
 {
     "name": "Specialization 1"
 }
+
+### Update specialization
+PUT http://localhost:8000/api/v1/update_specialization/
+Content-Type: application/json
+
+{
+    "id": 1,
+    "name": "Specialization 2"
+}
+
+### Delete specialization
+DELETE http://localhost:8000/api/v1/delete_specialization/
+Content-Type: application/json
+
+{
+    "id": 1
+}
