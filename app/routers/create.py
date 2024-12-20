@@ -1,14 +1,14 @@
 from fastapi.responses import JSONResponse
 from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
-from app.models import *
+from app.Models.create_models import *
 from app.database import get_db
-from app.schemas import *
+from app.schemas.schemas import *
 
 router = APIRouter()
 ### Create
 @router.post("/api/v1/create_specializations/")
-def create_specialization(specialization: SpecializationModel, db: Session = Depends(get_db)):
+async def create_specialization(specialization: SpecializationModel, db: Session = Depends(get_db)):
     try:    
         db_specialization = Specialization(name=specialization.name)
         db.add(db_specialization)
@@ -20,7 +20,7 @@ def create_specialization(specialization: SpecializationModel, db: Session = Dep
 
 
 @router.post("/api/v1/create_groups/")
-def create_group(group: GroupModel, db: Session = Depends(get_db)):
+async def create_group(group: GroupModel, db: Session = Depends(get_db)):
     try:
         db_group = Group(
             group_name=group.group_name,
@@ -35,7 +35,7 @@ def create_group(group: GroupModel, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": f"Error creating group: {e}"}, status_code=500)
 
 @router.post("/api/v1/create_programs/")
-def create_program(program: ProgramModel, db: Session = Depends(get_db)):
+async def create_program(program: ProgramModel, db: Session = Depends(get_db)):
     try:
         db_program = Program(
             name=program.name,
@@ -51,7 +51,7 @@ def create_program(program: ProgramModel, db: Session = Depends(get_db)):
 
 
 @router.post("/api/v1/create_students/")
-def create_student(student: StudentModel, db: Session = Depends(get_db)):
+async def create_student(student: StudentModel, db: Session = Depends(get_db)):
     try:
         db_student = Student(
             first_name=student.first_name,
@@ -67,7 +67,7 @@ def create_student(student: StudentModel, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": f"Error creating student: {e}"}, status_code=500)
 
 @router.post("/api/v1/create_teachers/")
-def create_teacher(teacher: TeacherModel, db: Session = Depends(get_db)):
+async def create_teacher(teacher: TeacherModel, db: Session = Depends(get_db)):
     try:
         db_teacher = Teacher(
             first_name=teacher.first_name,
@@ -82,7 +82,7 @@ def create_teacher(teacher: TeacherModel, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": f"Error creating teacher: {e}"}, status_code=500)
 
 @router.post("/api/v1/create_subjects/")
-def create_subject(subject: SubjectModel, db: Session = Depends(get_db)):
+async def create_subject(subject: SubjectModel, db: Session = Depends(get_db)):
     try:
         db_subject = Subject(
             name=subject.name,
@@ -97,7 +97,7 @@ def create_subject(subject: SubjectModel, db: Session = Depends(get_db)):
         return JSONResponse(content={"message": f"Error creating subject: {e}"}, status_code=500)
 
 @router.post("/api/v1/create_attendance_logs/")
-def create_attendance_log(attendance_log: AttendanceLogModel, db: Session = Depends(get_db)):
+async def create_attendance_log(attendance_log: AttendanceLogModel, db: Session = Depends(get_db)):
     try:
         db_attendance_log = AttendanceLog(
             id_subject=attendance_log.id_subject,
@@ -111,7 +111,7 @@ def create_attendance_log(attendance_log: AttendanceLogModel, db: Session = Depe
         return JSONResponse(content={"message": f"Error creating attendance log: {e}"}, status_code=500)
 
 @router.post("/api/v1/create_attendance/")
-def create_attendance(attendance: AttendanceModel, db: Session = Depends(get_db)):
+async def create_attendance(attendance: AttendanceModel, db: Session = Depends(get_db)):
     try:
         db_attendance = Attendance(
             id_attendance_log=attendance.id_attendance_log,

@@ -2,9 +2,9 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from app.models import *
+from app.Models.create_models import *
 from app.database import get_db
-from app.schemas import DeleteByIdModel
+from app.schemas.schemas import DeleteByIdModel
 
 router = APIRouter()
 

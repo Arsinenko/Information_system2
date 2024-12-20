@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from app.database import engine, get_db, Base
-from app.models import Specialization, Group, Program, Student, Teacher, Subject, AttendanceLog, Attendance  # Импортируйте ваши модели
+from app.Models.create_models import Specialization, Group, Program, Student, Teacher, Subject, AttendanceLog, Attendance  # Импортируйте ваши модели
 import uvicorn
-from app.schemas import *
+from app.schemas.schemas import *
 from app.routers import create, read, update, delete
 
 Base.metadata.create_all(bind=engine)
