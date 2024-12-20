@@ -1,0 +1,151 @@
+<html>
+<head>
+    <title>All Students - College Attendance Records</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2d3748;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .sidebar h2 {
+            color: #63b3ed;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #4a5568;
+            border: none;
+            color: #e2e8f0;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+        .sidebar button:hover {
+            background-color: #63b3ed;
+            color: #1a202c;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+        }
+        .content h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #63b3ed;
+        }
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .content th, .content td {
+            padding: 12px 15px;
+            border: 1px solid #4a5568;
+            text-align: left;
+        }
+        .content th {
+            background-color: #2d3748;
+            color: #63b3ed;
+        }
+        .content tr:nth-child(even) {
+            background-color: #2d3748;
+        }
+        .content button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #4a5568;
+            border: none;
+            color: #e2e8f0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .content button:hover {
+            background-color: #63b3ed;
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Navigation</h2>
+        <button onclick="window.location.href='/students'"><i class="fas fa-users"></i> All Students</button>
+        <button onclick="window.location.href='/groups'"><i class="fas fa-layer-group"></i> Groups</button>
+        <button onclick="window.location.href='/subjects'"><i class="fas fa-book"></i> Subjects</button>
+        <button onclick="window.location.href='/admin_page'"><i class="fas fa-user-cog"></i> Admin</button>
+    </div>
+    <div class="content">
+        <h1>All Students</h1>
+        <div class="flex space-x-4 mb-4">
+            <button onclick="sortTable('name')">Sort by Name</button>
+            <button onclick="sortTable('subjects')">Sort by Subjects</button>
+            <button onclick="sortTable('group')">Sort by Group</button>
+        </div>
+        <table id="studentsTable">
+            <thead>
+                <tr>
+                <th>ФИО</th>
+                <th>Группа</th>
+                <th>Количество предметов</th>
+                <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        async function fetchStudents() {
+            const response = await fetch('http://localhost:8000/api/v1/get_students');
+            const students = await response.json();
+            return students;
+        }
+
+        async function populateTable() {
+            const tableBody = document.querySelector('#studentsTable tbody');
+            tableBody.innerHTML = '';
+            const students = await fetchStudents();
+            for (const student of students) {
+                const subjectCount = student.subjects ? student.subjects.length : 0; // Assuming subjects is an array
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student["first_name"]} ${student.middle_name} ${student.last_name}</td>
+                    <td>${student.group_id}</td>
+                    <td>${subjectCount}</td>
+                    <td><button onclick="updateStudent(${student.id})"><i class="fas fa-sync"></i></button></td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        function sortTable(criteria) {
+            if (criteria === 'name') {
+                students.sort((a, b) => a.first_name.localeCompare(b.first_name));
+            } else if (criteria === 'subjects') {
+                students.sort((a, b) => (a.subjects ? a.subjects.length : 0) - (b.subjects ? b.subjects.length : 0));
+            }
+            populateTable();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateTable();
+        });
+    </script>
+</body>
+</html>
