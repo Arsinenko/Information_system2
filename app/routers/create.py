@@ -6,10 +6,6 @@ from app.database import get_db
 from app.schemas import *
 
 router = APIRouter()
-
-@router.get("/")
-def read_root():
-    return {"Hello": "World"}
 ### Create
 @router.post("/api/v1/create_specializations/")
 def create_specialization(specialization: SpecializationModel, db: Session = Depends(get_db)):
