@@ -23,7 +23,7 @@ def get_groups(db: Session = Depends(get_db)):
 def get_programs(db: Session = Depends(get_db)):
     programs = db.query(Program).all()
     result = [{"id": group.id, "name": group.name, "specialization_id": group.id_specialization} for group in programs]
-    return JSONResponse(content={"programs": programs}, status_code=200)
+    return JSONResponse(content={"programs": result}, status_code=200)
 
 @router.get("/api/v1/get_students/")
 def get_students(db: Session = Depends(get_db)):
@@ -34,7 +34,7 @@ def get_students(db: Session = Depends(get_db)):
                "last_name": student.last_name,
                "group_id": student.id_group,
                } for student in students]
-    return JSONResponse(content={"students": students}, status_code=200)
+    return JSONResponse(content={"students": result}, status_code=200)
 
 @router.get("/api/v1/get_teachers/")
 def get_teachers(db: Session = Depends(get_db)):
@@ -43,7 +43,7 @@ def get_teachers(db: Session = Depends(get_db)):
                "first_name": teacher.first_name,
                "middle_name": teacher.middle_name,
                "last_name": teacher.last_name} for teacher in teachers]
-    return JSONResponse(content={"teachers": teachers}, status_code=200)
+    return JSONResponse(content={"teachers": result}, status_code=200)
 
 @router.get("/api/v1/get_subjects/")
 def get_subjects(db: Session = Depends(get_db)):
@@ -52,7 +52,7 @@ def get_subjects(db: Session = Depends(get_db)):
                "name": subject.name,
                "id_program": subject.id_program,
                "id_teacher": subject.id_teacher} for subject in subjects]
-    return JSONResponse(content={"subjects": subjects}, status_code=200)
+    return JSONResponse(content={"subjects": result}, status_code=200)
 
 @router.get("/api/v1/get_attendance_logs/")
 def get_attendance_logs(db: Session = Depends(get_db)):
@@ -60,10 +60,14 @@ def get_attendance_logs(db: Session = Depends(get_db)):
     result = [{"id": log.id,
               "id_subject": log.id_subject,
               "date": log.date} for log in attendance_logs]
-    return JSONResponse(content={"attendance_logs": attendance_logs}, status_code=200)
+    return JSONResponse(content={"attendance_logs": result}, status_code=200)
 
 @router.get("/api/v1/get_attendance/")
 def get_attendance(db: Session = Depends(get_db)):
     attendance = db.query(Attendance).all()
-    return JSONResponse(content={"attendance": attendance}, status_code=200)
+    result = [{"id": a.id,
+               "id_attendance_log": a.id_attendance_log,
+               "id_student": a.id_student,
+               "status": a.status} for a in attendance]
+    return JSONResponse(content={"attendance": result}, status_code=200)
 
