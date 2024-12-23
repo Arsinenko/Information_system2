@@ -33,4 +33,4 @@ async def update_group(item: UpdateGroupModel, db: Session = Depends(get_db)):
     except Exception as e:
         return JSONResponse(content={"message": str(e)})
 
-@router.post()
+# @router.post("/api/v1/update")

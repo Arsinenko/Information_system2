@@ -27,8 +27,6 @@ class Group(Base):
 
     group_name = Column(String(255), nullable=False, unique=True)
 
-    size = Column(Integer, nullable=False, default=0)
-
     id_specialization = Column(Integer, ForeignKey('Specializations.id'), nullable=False)
 
     

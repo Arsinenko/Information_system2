@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create specialization - College Attendance Records</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2d3748;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .sidebar h2 {
+            color: #63b3ed;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #4a5568;
+            border: none;
+            color: #e2e8f0;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+        .sidebar button:hover {
+            background-color: #63b3ed;
+            color: #1a202c;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+        }
+        .content h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #63b3ed;
+        }
+        .content form {
+            background-color: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .content label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .content button[type="submit"] {
+            background-color: #63b3ed;
+            color: #1a202c;
+            border: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .content button[type="submit"]:hover {
+            background-color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Navigation</h2>
+        <button onclick="window.location.href='/students'"><i class="fas fa-users"></i> All Students</button>
+        <button onclick="window.location.href='/groups'"><i class="fas fa-layer-group"></i> Groups</button>
+        <button onclick="window.location.href='/subjects'"><i class="fas fa-book"></i> Subjects</button>
+        <button onclick="window.location.href='/admin_page'"><i class="fas fa-user-cog"></i> Admin</button>
+    </div>
+    <div class="content">
+        <h1>Create Student</h1>
+        <form id="create_specialization_form">
+            <label for="name">specialization name</label>
+            <input type="text" id="specialization_name" name="specialization_name" required>
+            <button type="submit">Add Student</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('create_specialization_form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = {
+                name : document.getElementById('specialization_name').value
+            };
+
+            fetch('http://localhost:8000/api/v1/create_specialization', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Specialization added successfully!');
+                // Optionally, redirect or clear the form
+                document.getElementById('create_specialization_form').reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add student.');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -35,6 +35,10 @@ async def subjects_page():
 async def admin_page():
     return FileResponse("app/ui/admin_page.html", media_type="text/html")
 
+@app.get("/specializations")
+async def specializations_page():
+    return FileResponse("app/ui/specializations.html", media_type="text/html")
+
 @app.get("/create_group")
 async def create_group_page():
     return FileResponse("app/ui/create_group.html", media_type="text/html")
@@ -50,6 +54,11 @@ async def create_subject_page():
 @app.get("/create_teacher")
 async def create_teacher_page():
     return FileResponse("app/ui/create_teacher.html", media_type="text/html")
+
+@app.get("/create_specialization")
+async def create_specialization_page():
+    return FileResponse("app/ui/create_specialization.html")
+
     
 
 if __name__ == "__main__":
