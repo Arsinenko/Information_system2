@@ -7,7 +7,6 @@ class SpecializationModel(BaseModel):
 
 class GroupModel(BaseModel):
     group_name: str
-    size: int
     id_specialization: int
 
 class ProgramModel(BaseModel):
