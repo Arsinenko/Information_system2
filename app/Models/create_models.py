@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, Time
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -146,3 +146,31 @@ class Attendance(Base):
     attendance_log = relationship("AttendanceLog")
 
     student = relationship("Student")
+
+class Schedule(Base):
+
+    __tablename__ = 'Schedule'
+
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    
+
+    id_subject = Column(Integer, ForeignKey('Subjects.id'), nullable=False)
+
+    id_group = Column(Integer, ForeignKey('Groups.id'), nullable=False)
+
+    
+
+    day_of_week = Column(Integer, nullable=False)
+
+    start_time = Column(Time, nullable=False)
+
+    end_time = Column(Time, nullable=False)
+
+    date_of_lesson = Column(Date, nullable=False)
+
+
+    subject = relationship("Subject")
+
+    group = relationship("Group")

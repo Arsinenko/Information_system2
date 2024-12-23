@@ -24,7 +24,6 @@ async def create_group(group: GroupModel, db: Session = Depends(get_db)):
     try:
         db_group = Group(
             group_name=group.group_name,
-            size=group.size,
             id_specialization=group.id_specialization
         )
         # Check if the specialization exists
