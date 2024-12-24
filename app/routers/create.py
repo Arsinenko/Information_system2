@@ -44,9 +44,13 @@ async def create_program(program: ProgramModel, db: Session = Depends(get_db)):
         spec_exests = db.query(Specialization).filter(Specialization.id == program.id_specialization).first()
         if not spec_exests:
             return JSONResponse(content={"message": "Specialization does not exist."}, status_code=400)
+        subject_exists = db.query(Subject).filter(Subject.id == program.id_subject).first()
+        if not subject_exists:
+            return JSONResponse(content={"message": "Subject does not exist"}, status_code=400)
         db_program = Program(
             name=program.name,
             id_specialization=program.id_specialization,
+            id_subject=program.id_subject,
             hours=program.hours
         )
         
@@ -97,15 +101,11 @@ async def create_teacher(teacher: TeacherModel, db: Session = Depends(get_db)):
 @router.post("/api/v1/create_subject/")
 async def create_subject(subject: SubjectModel, db: Session = Depends(get_db)):
     try:
-        program_exists = db.query(Program).filter(Program.id == subject.id_program).first()
-        teacher_exists = db.query(Teacher).filter(Program.id == subject.id_teacher).first()
-        if not program_exists:
-            return JSONResponse(content={"message": "Error: Program does not exist."}, status_code=400)
-        if not teacher_exists:
+        teacher_exists = db.query(Teacher).filter(Teacher.id == subject.id_teacher).first()
+        if teacher_exists == None:
             return JSONResponse(content={"message": "Error: Teacher does not exist."}, status_code=400)
         db_subject = Subject(
             name=subject.name,
-            id_program=subject.id_program,
             id_teacher=subject.id_teacher
         )
 
@@ -116,43 +116,45 @@ async def create_subject(subject: SubjectModel, db: Session = Depends(get_db)):
     except Exception as e:
         return JSONResponse(content={"message": f"Error creating subject: {e}"}, status_code=500)
 
-@router.post("/api/v1/create_attendance_log/")
-async def create_attendance_log(attendance_log: AttendanceLogModel, db: Session = Depends(get_db)):
+
+# @router.post("/api/v1/create_attendance/")
+# async def create_attendance(attendance: AttendanceModel, db: Session = Depends(get_db)):
+#     try:
+#         db_attendance = Attendance(
+#             id_attendance_log=attendance.id_attendance_log,
+#             id_student=attendance.id_student,
+#             status=attendance.status
+#         )
+#         # Check if the attendance log and student exist
+#         attendance_log_exists = db.query(AttendanceLog).filter(AttendanceLog.id == attendance.id_attendance_log).first()
+#         if not attendance_log_exists:
+#             return JSONResponse(content={"message": "Error: Attendance log does not exist."}, status_code=400)
+
+#         student_exists = db.query(Student).filter(Student.id == attendance.id_student).first()
+#         if not student_exists:
+#             return JSONResponse(content={"message": "Error: Student does not exist."}, status_code=400)
+
+#         db.add(db_attendance)
+#         db.commit()
+#         db.refresh(db_attendance)
+#         return db_attendance
+#     except Exception as e:
+#         return JSONResponse(content={"message": f"Error creating attendance: {e}"}, status_code=500)
+
+@router.post("/api/v1/create_schedule")
+async def create_schedule(schedule: ScheduleModel, db: Session = Depends(get_db)):
     try:
-        subject_exists = db.query(Subject).filter(Subject.id == attendance_log.id_subject).first()
-        if not subject_exists:
-            return JSONResponse(content={"message": "Error: Subject does not exist."}, status_code=400)
-        db_attendance_log = AttendanceLog(
-            id_subject=attendance_log.id_subject,
-            date=attendance_log.date
-        )
-        db.add(db_attendance_log)
+        subject_exiests = db.query(Subject).filter(Subject.id == schedule.id_subject).first()
+        if not subject_exiests:
+            return JSONResponse(content={"message": "Subject does not exists"}, status_code=400)
+        group_exists = db.query(Group).filter(Group.id == schedule.id_group).first()
+        if not group_exists:
+            return JSONResponse({"message": "Group does not exists"}, status_code=400)
+        
+        db_schedule = Schedule(id_subject=schedule.id_subject, id_group=schedule.id_group, lesson_number=schedule.lesson_number, date_of_lesson=schedule.date_of_lesson)
+        db.add(db_schedule)
         db.commit()
-        db.refresh(db_attendance_log)
-        return db_attendance_log
-    except Exception as e:
-        return JSONResponse(content={"message": f"Error creating attendance log: {e}"}, status_code=500)
-
-@router.post("/api/v1/create_attendance/")
-async def create_attendance(attendance: AttendanceModel, db: Session = Depends(get_db)):
-    try:
-        db_attendance = Attendance(
-            id_attendance_log=attendance.id_attendance_log,
-            id_student=attendance.id_student,
-            status=attendance.status
-        )
-        # Check if the attendance log and student exist
-        attendance_log_exists = db.query(AttendanceLog).filter(AttendanceLog.id == attendance.id_attendance_log).first()
-        if not attendance_log_exists:
-            return JSONResponse(content={"message": "Error: Attendance log does not exist."}, status_code=400)
-
-        student_exists = db.query(Student).filter(Student.id == attendance.id_student).first()
-        if not student_exists:
-            return JSONResponse(content={"message": "Error: Student does not exist."}, status_code=400)
-
-        db.add(db_attendance)
-        db.commit()
-        db.refresh(db_attendance)
-        return db_attendance
-    except Exception as e:
-        return JSONResponse(content={"message": f"Error creating attendance: {e}"}, status_code=500)
+        db.refresh(db_schedule)
+        return db_schedule
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)

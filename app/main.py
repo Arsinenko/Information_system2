@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from app.database import engine, get_db, Base
-from app.Models.create_models import Specialization, Group, Program, Student, Teacher, Subject, AttendanceLog, Attendance  # Импортируйте ваши модели
+from app.Models.create_models import Specialization, Group, Program, Student, Teacher, Subject, Attendance  # Импортируйте ваши модели
 import uvicorn
 from app.schemas.schemas import *
 from app.routers import create, read, update, delete
@@ -23,7 +23,7 @@ async def index():
 async def groups_page():
     return FileResponse("app/ui/groups.html", media_type="text/html")
 
-@app.get("/students")
+@app.get("/students/")
 async def students_page():
     return FileResponse("app/ui/students.html", media_type="text/html")
 
@@ -58,6 +58,7 @@ async def create_teacher_page():
 @app.get("/create_specialization")
 async def create_specialization_page():
     return FileResponse("app/ui/create_specialization.html")
+
 
     
 

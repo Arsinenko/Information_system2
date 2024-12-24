@@ -45,11 +45,13 @@ class Program(Base):
     name = Column(String(255), nullable=False)
 
     id_specialization = Column(Integer, ForeignKey('Specializations.id'), nullable=False)
+    
+    id_subject = Column(Integer, ForeignKey('Subjects.id'), nullable=False)
 
     hours = Column(Integer, nullable=False)
 
     
-
+    subject = relationship("Subject")
     specialization = relationship("Specialization")
 
 
@@ -99,32 +101,11 @@ class Subject(Base):
 
     name = Column(String(255), nullable=False)
 
-    id_program = Column(Integer, ForeignKey('Programs.id'), nullable=False)
-
     id_teacher = Column(Integer, ForeignKey('Teachers.id'), nullable=False)
 
-    
-
-    program = relationship("Program")
 
     teacher = relationship("Teacher")
 
-
-class AttendanceLog(Base):
-
-    __tablename__ = 'Attendance_logs'
-
-    
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-    id_subject = Column(Integer, ForeignKey('Subjects.id'), nullable=False)
-
-    date = Column(Date, nullable=False)
-
-    
-
-    subject = relationship("Subject")
 
 
 class Attendance(Base):
@@ -135,21 +116,19 @@ class Attendance(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    id_attendance_log = Column(Integer, ForeignKey('Attendance_logs.id'), nullable=False)
-
+    id_schedule = Column(Integer, ForeignKey('Schedules.id'), nullable=False)
+    
     id_student = Column(Integer, ForeignKey('Students.id'), nullable=False)
 
     status = Column(Text)
 
     
-
-    attendance_log = relationship("AttendanceLog")
-
+    schedule = relationship("Schedule")
     student = relationship("Student")
 
 class Schedule(Base):
 
-    __tablename__ = 'Schedule'
+    __tablename__ = 'Schedules'
 
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -160,14 +139,8 @@ class Schedule(Base):
 
     id_group = Column(Integer, ForeignKey('Groups.id'), nullable=False)
 
+    lesson_number = Column(Integer, nullable=False)
     
-
-    day_of_week = Column(Integer, nullable=False)
-
-    start_time = Column(Time, nullable=False)
-
-    end_time = Column(Time, nullable=False)
-
     date_of_lesson = Column(Date, nullable=False)
 
 

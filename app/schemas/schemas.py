@@ -12,6 +12,7 @@ class GroupModel(BaseModel):
 class ProgramModel(BaseModel):
     name: str
     id_specialization: int
+    id_subject: int
     hours: int
 
 class StudentModel(BaseModel):
@@ -27,17 +28,19 @@ class TeacherModel(BaseModel):
     
 class SubjectModel(BaseModel):
     name: str
-    id_program: int
     id_teacher: int
-    
-class AttendanceLogModel(BaseModel):
-    id_subject: int
-    date: dt.date
 
 class AttendanceModel(BaseModel):
     id_attendance_log: int
     id_student: int
     status: str
+    
+class ScheduleModel(BaseModel):
+    id_subject: int
+    id_group: int
+    lesson_number: int
+    date_of_lesson: str
+    
 
 
 ### Delete entities
