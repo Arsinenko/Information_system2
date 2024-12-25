@@ -112,3 +112,5 @@ class UpdateSpecialization(BaseModel):
 class GetStudentsByGroup(BaseModel):
     id_group: int
     
+class GetStudentAttendance(BaseModel):
+    id_student: int
