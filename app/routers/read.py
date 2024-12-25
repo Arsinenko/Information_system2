@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.Models.create_models import *
 from app.database import get_db
 from app.schemas.schemas import GetStudentsByGroup, GetStudentAttendance
@@ -90,11 +91,44 @@ async def get_schedules(db: Session = Depends(get_db)):
         return JSONResponse(content={"message": str(ex)})
     
 @router.get("/api/v1/get_student_attendance")
-async def get_student_attendance(model: GetStudentAttendance, db: Session = Depends(get_db)):
+async def get_student_attendance_statistics(model: GetStudentAttendance, db: Session = Depends(get_db)):
     try:
         student_exists = db.query(Student).filter(Student.id == model.id_student).first()
         if not student_exists:
             return JSONResponse(content={"message": "Student not found!"})
-        attendance = db.query(Attendance).filter(Attendance.id_student == model.id_student).join(Schedule).join()
+        total_attendance = db.query(Attendance).filter(Attendance.id_student == model.id_student).count()
+        present_count = db.query(Attendance).filter(Attendance.id_student == model.id_student, Attendance.status == "present").count()
+        absent_count = total_attendance - present_count
+        
+        present_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+        absent_percentage = (absent_count / total_attendance * 100) if total_attendance > 0 else 0
+        
+        subjects_attendance = db.query(Subject.name,
+                                       func.count(Attendance.id).label("total"),
+                                       func.sum(func.case([(Attendance.status == "present", 1)], else_=0)).label("present_count"),
+                                       func.sum(func.case([(Attendance.status == "absent", 1)], else_=0)).label("absent_count")
+                                       ).join(Schedule).join(Subject).filter(Attendance.id_student == model.id).group_by(Subject.id).all()
+        result = {
+            "total_attendance": total_attendance,
+            "present_count": present_count,
+            "absent_count": absent_count,
+            "present_percentage": present_percentage,
+            "absent_percentage": absent_percentage,
+            "subjects_attendance": [
+                {
+                    "suject_name": subject.name,
+                    "total": subject.total,
+                    "present": subject.present_count,
+                    "absent": subject.absent_count
+                } for subject in subjects_attendance
+            ]
+            
+        }
+        return JSONResponse(content={"message": result}, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)
+        
+
+        
 
         
