@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.Models.create_models import *
 from app.database import get_db
 from app.schemas.schemas import *
+import datetime as dt
 
 router = APIRouter()
 ### Create
@@ -151,10 +152,27 @@ async def create_schedule(schedule: ScheduleModel, db: Session = Depends(get_db)
         if not group_exists:
             return JSONResponse({"message": "Group does not exists"}, status_code=400)
         
-        db_schedule = Schedule(id_subject=schedule.id_subject, id_group=schedule.id_group, lesson_number=schedule.lesson_number, date_of_lesson=schedule.date_of_lesson)
+        db_schedule = Schedule(id_subject=schedule.id_subject, id_group=schedule.id_group, lesson_number=schedule.lesson_number, date_of_lesson=dt.datetime.strptime(schedule.date_of_lesson, "%Y-%m-%d").date())
         db.add(db_schedule)
         db.commit()
         db.refresh(db_schedule)
         return db_schedule
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)
+
+@router.post("/api/v1/create_attendance")
+async def create_attendance(attendance: AttendanceModel, db: Session = Depends(get_db)):
+    try:
+        schedule_exists = db.query(Schedule).filter(Schedule.id == attendance.id_schedule).first()
+        if not schedule_exists:
+            return JSONResponse(content={"message": "Schedule does not exists"}, status_code=400)
+        student_exists = db.query(Student).filter(Student.id == attendance.id_student).first()
+        if not student_exists:
+            return JSONResponse(content={"messsage": "Student does not exists"}, status_code=400)
+        db_attendance = Attendance(id_schedule=attendance.id_schedule, id_student=attendance.id_student, status=attendance.status)
+        db.add(db_attendance)
+        db.commit()
+        db.refresh(db_attendance)
+        return db_attendance
     except Exception as ex:
         return JSONResponse(content={"message": str(ex)}, status_code=500)

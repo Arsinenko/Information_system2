@@ -40,6 +40,11 @@ class ScheduleModel(BaseModel):
     id_group: int
     lesson_number: int
     date_of_lesson: str
+
+class AttendanceModel(BaseModel):
+    id_schedule: int
+    id_student: int
+    status: str = "present" 
     
 
 
@@ -103,3 +108,7 @@ class UpdateSpecialization(BaseModel):
     class Config:
         from_attributes = True
 
+### Get 
+class GetStudentsByGroup(BaseModel):
+    id_group: int
+    

@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.Models.create_models import *
 from app.database import get_db
+from app.schemas.schemas import GetStudentsByGroup
 
 router = APIRouter()
 
@@ -18,12 +19,6 @@ def get_groups(db: Session = Depends(get_db)):
     groups = db.query(Group).all()
     groups_list = [{"id": group.id, "name": group.group_name} for group in groups]
     return JSONResponse(content={"groups": groups_list}, status_code=200)
-
-@router.get("/api/v1/get_programs/")
-def get_programs(db: Session = Depends(get_db)):
-    programs = db.query(Program).all()
-    result = [{"id": group.id, "name": group.name, "specialization_id": group.id_specialization} for group in programs]
-    return JSONResponse(content={"programs": result}, status_code=200)
 
 @router.get("/api/v1/get_students/")
 def get_students(db: Session = Depends(get_db)):
@@ -45,29 +40,34 @@ def get_teachers(db: Session = Depends(get_db)):
                "last_name": teacher.last_name} for teacher in teachers]
     return JSONResponse(content={"teachers": result}, status_code=200)
 
-@router.get("/api/v1/get_subjects/")
-def get_subjects(db: Session = Depends(get_db)):
-    subjects = db.query(Subject).all()
-    result = [{"id": subject.id,
-               "name": subject.name,
-               "id_program": subject.id_program,
-               "id_teacher": subject.id_teacher} for subject in subjects]
-    return JSONResponse(content={"subjects": result}, status_code=200)
 
-@router.get("/api/v1/get_attendance_logs/")
-def get_attendance_logs(db: Session = Depends(get_db)):
-    attendance_logs = db.query(AttendanceLog).all()
-    result = [{"id": log.id,
-              "id_subject": log.id_subject,
-              "date": log.date} for log in attendance_logs]
-    return JSONResponse(content={"attendance_logs": result}, status_code=200)
+@router.get("/api/v1/get_students_by_group_id")
+async def get_students_by_group(model: GetStudentsByGroup, db: Session = Depends(get_db)):
+    try:
+        students = db.query(Student).filter(Student.id_group == model.id_group).all()
+        result = [{
+            "id": student.id,
+            "first_name": student.first_name,
+            "middle_name": student.middle_name,
+            "last_name": student.last_name
+            } for student in students]
+        return JSONResponse(content={"message": result}, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)  
 
-@router.get("/api/v1/get_attendance/")
-def get_attendance(db: Session = Depends(get_db)):
-    attendance = db.query(Attendance).all()
-    result = [{"id": a.id,
-               "id_attendance_log": a.id_attendance_log,
-               "id_student": a.id_student,
-               "status": a.status} for a in attendance]
-    return JSONResponse(content={"attendance": result}, status_code=200)
+@router.get("/api/v1/get_schedules")
+async def get_schedules(db: Session = Depends(get_db)):
+    try:
+        schedules = db.query(Schedule).all()
+        result = [{
+            "id": elem.id,
+            "id_subject": elem.id_subject,
+            "id_group": elem.id_group,
+            "lesson_number": elem.lesson_number,
+            "date_of_lesson": str(elem.date_of_lesson)
+            } for elem in schedules]
+        return JSONResponse(content={"message": result}, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)})
 
+        
