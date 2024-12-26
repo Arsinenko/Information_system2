@@ -65,6 +65,19 @@
         .content tr:nth-child(even) {
             background-color: #2d3748;
         }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #2d3748;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #63b3ed;
+            transition: width 0.3s ease;
+        }
         .content button {
             padding: 10px 20px;
             margin: 10px 0;
@@ -91,18 +104,13 @@
     </div>
     <div class="content">
         <h1>All Students</h1>
-        <div class="flex space-x-4 mb-4">
-            <button onclick="sortTable('name')">Sort by Name</button>
-            <button onclick="sortTable('subjects')">Sort by Subjects</button>
-            <button onclick="sortTable('group')">Sort by Group</button>
-        </div>
+        <button id="sortButton">Сортировать по проценту посещаемости</button>
         <table id="studentsTable">
             <thead>
                 <tr>
-                <th>ФИО</th>
-                <th>Группа</th>
-                <th>Количество предметов</th>
-                <th>Действия</th>
+                    <th>ID</th>
+                    <th>ФИО</th>
+                    <th>Процент посещаемости</th>
                 </tr>
             </thead>
             <tbody>
@@ -111,41 +119,48 @@
         </table>
     </div>
     <script>
+        let studentsData = []; // Store fetched students data
+
         async function fetchStudents() {
             const response = await fetch('http://localhost:8000/api/v1/get_students');
-            const students = await response.json();
-            return students;
+            const data = await response.json();
+            studentsData = data.students; // Store the students array
+            return studentsData;
         }
 
-        async function populateTable() {
+        function populateTable(students) {
             const tableBody = document.querySelector('#studentsTable tbody');
             tableBody.innerHTML = '';
-            const students = await fetchStudents();
             for (const student of students) {
-                const subjectCount = student.subjects ? student.subjects.length : 0; // Assuming subjects is an array
+                const attendancePercentage = student.attendance_percentage || 0; // Assuming attendance_percentage is provided
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${student["first_name"]} ${student.middle_name} ${student.last_name}</td>
-                    <td>${student.group_id}</td>
-                    <td>${subjectCount}</td>
-                    <td><button onclick="updateStudent(${student.id})"><i class="fas fa-sync"></i></button></td>
+                    <td>${student.id}</td>
+                    <td>${student.first_name} ${student.middle_name} ${student.last_name}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${attendancePercentage}%"></div>
+                        </div>
+                        ${attendancePercentage}%
+                    </td>
                 `;
                 tableBody.appendChild(row);
             }
         }
 
-        function sortTable(criteria) {
-            if (criteria === 'name') {
-                students.sort((a, b) => a.first_name.localeCompare(b.first_name));
-            } else if (criteria === 'subjects') {
-                students.sort((a, b) => (a.subjects ? a.subjects.length : 0) - (b.subjects ? b.subjects.length : 0));
-            }
-            populateTable();
+        async function init() {
+            const students = await fetchStudents();
+            populateTable(students);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            populateTable();
-        });
+        function sortStudentsByAttendance() {
+            const sortedStudents = [...studentsData].sort((a, b) => b.attendance_percentage - a.attendance_percentage);
+            populateTable(sortedStudents);
+        }
+
+        document.getElementById('sortButton').addEventListener('click', sortStudentsByAttendance);
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

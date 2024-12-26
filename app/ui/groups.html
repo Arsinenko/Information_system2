@@ -115,8 +115,7 @@
                     <td>${group.name}</td>
                 `;
                 row.addEventListener('click', () => {
-                    // Будет заменено на реальный URL позже
-                    console.log(`Clicked group with ID: ${group.id}`);
+                    window.location.href = `/group/${group.id}/${group.name}`;
                 });
                 tableBody.appendChild(row);
             });

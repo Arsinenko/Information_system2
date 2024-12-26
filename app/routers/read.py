@@ -23,14 +23,74 @@ def get_groups(db: Session = Depends(get_db)):
 
 @router.get("/api/v1/get_students/")
 def get_students(db: Session = Depends(get_db)):
-    students = db.query(Student).all()
-    result = [{"id": student.id,
-               "first_name": student.first_name,
-               "middle_name": student.middle_name,
-               "last_name": student.last_name,
-               "group_id": student.id_group,
-               } for student in students]
-    return JSONResponse(content={"students": result}, status_code=200)
+    try:
+        # Сначала проверим значения в таблице Attendance
+        attendance_debug = (
+            db.query(
+                Attendance.id_student,
+                Attendance.status
+            )
+            .limit(5)  # Посмотрим первые 5 записей
+            .all()
+        )
+        print("Debug - Attendance records:", attendance_debug)
+
+        attendance_stats = (
+            db.query(
+                Attendance.id_student,
+                func.count(Attendance.id).label('total_lessons'),
+                func.sum(
+                    case(
+                        # Выведем все уникальные значения status
+                        (Attendance.status.in_(['П', 'п', 'Present', 'present']), 1),
+                        else_=0
+                    )
+                ).label('attended_lessons')
+            )
+            .group_by(Attendance.id_student)
+            .subquery()
+        )
+
+        students = (
+            db.query(
+                Student,
+                Group.group_name,
+                attendance_stats.c.total_lessons,
+                attendance_stats.c.attended_lessons
+            )
+            .join(Group)
+            .outerjoin(attendance_stats, Student.id == attendance_stats.c.id_student)
+            .all()
+        )
+
+        # Добавим отладочную информацию
+        for student in students:
+            print(f"Student {student[0].last_name}:")
+            print(f"  - total_lessons: {student[2]}")
+            print(f"  - attended_lessons: {student[3]}")
+
+        result = [{
+            "id": student[0].id,
+            "first_name": student[0].first_name,
+            "middle_name": student[0].middle_name,
+            "last_name": student[0].last_name,
+            "group_id": student[0].id_group,
+            "group_name": student[1],
+            "attendance_percentage": round(
+                (student[3] / student[2] * 100) if student[2] and student[3] is not None else 0,
+                2
+            ),
+            # Добавим отладочную информацию в ответ
+            "debug_info": {
+                "total_lessons": student[2],
+                "attended_lessons": student[3]
+            }
+        } for student in students]
+
+        return JSONResponse(content={"students": result}, status_code=200)
+    except Exception as ex:
+        print("Error:", str(ex))  # Добавим вывод ошибки в консоль
+        return JSONResponse(content={"error": str(ex)}, status_code=500)
 
 @router.get("/api/v1/get_teachers/")
 def get_teachers(db: Session = Depends(get_db)):

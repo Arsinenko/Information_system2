@@ -30,6 +30,10 @@ async def group_page(group_id: int, name: str):
 async def students_page():
     return FileResponse("app/ui/students.html", media_type="text/html")
 
+@app.get("/student_attendance/{id}")
+async def student_attendance(id: int):
+    return FileResponse("app/ui/student_attendance.html", media_type="text/html")
+
 @app.get("/subjects")               
 async def subjects_page():
     return FileResponse("app/ui/subjects.html", media_type="text/html")
