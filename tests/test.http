@@ -36,3 +36,14 @@ Content-Type: application/json
 
 ###
 GET http://localhost:8000/api/v1/get_schedules
+
+### Get 
+GET http://localhost:8000/api/v1/get_students_by_group_id
+Content-Type: application/json
+
+{
+    "id_group": 1
+}
+
+###
+GET http://localhost:8000/api/v1/get_students_by_group_id?id_group=1

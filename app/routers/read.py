@@ -61,7 +61,7 @@ async def get_programs(db: Session = Depends(get_db)):
     
 
 
-@router.get("/api/v1/get_students_by_group_id")
+@router.post("/api/v1/get_students_by_group_id")
 async def get_students_by_group(model: GetStudentsByGroup, db: Session = Depends(get_db)):
     try:
         students = db.query(Student).filter(Student.id_group == model.id_group).all()
@@ -90,7 +90,7 @@ async def get_schedules(db: Session = Depends(get_db)):
     except Exception as ex:
         return JSONResponse(content={"message": str(ex)})
 
-@router.get("/api/v1/get_student_attendance")
+@router.post("/api/v1/get_student_attendance")
 async def get_student_attendance_statistics(model: GetStudentAttendance, db: Session = Depends(get_db)):
     try:
         student_exists = db.query(Student).filter(Student.id == model.id_student).first()

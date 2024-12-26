@@ -18,10 +18,13 @@ app.include_router(delete.router)
 @app.get("/")
 async def index():
     return FileResponse("app/ui/index.html", media_type="text/html")
-
 @app.get("/groups")
 async def groups_page():
     return FileResponse("app/ui/groups.html", media_type="text/html")
+
+@app.get("/group/{group_id}/{name}")
+async def group_page(group_id: int, name: str):
+    return FileResponse("app/ui/group.html", media_type="text/html")
 
 @app.get("/students/")
 async def students_page():

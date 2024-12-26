@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Groups - College Attendance Records</title>
+    <title>Group Students - College Attendance Records</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,20 +65,6 @@
         .content tr:nth-child(even) {
             background-color: #2d3748;
         }
-        .content button {
-            padding: 10px 20px;
-            margin: 10px 0;
-            background-color: #4a5568;
-            border: none;
-            color: #e2e8f0;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .content button:hover {
-            background-color: #63b3ed;
-            color: #1a202c;
-        }
     </style>
 </head>
 <body>
@@ -90,12 +76,12 @@
         <button onclick="window.location.href='/admin_page'"><i class="fas fa-user-cog"></i> Admin</button>
     </div>
     <div class="content">
-        <h1>Groups</h1>
-        <table id="groupsTable">
+        <h1 id="groupTitle">Students of group</h1>
+        <table id="studentsTable">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Group Name</th>
+                    <th>Full Name</th>
                 </tr>
             </thead>
             <tbody>
@@ -104,42 +90,52 @@
         </table>
     </div>
     <script>
-        function populateTable(groups) {
-            const tableBody = document.querySelector('#groupsTable tbody');
-            tableBody.innerHTML = '';
-            groups.forEach(group => {
-                const row = document.createElement('tr');
-                row.style.cursor = 'pointer';
-                row.innerHTML = `
-                    <td>${group.id}</td>
-                    <td>${group.name}</td>
-                `;
-                row.addEventListener('click', () => {
-                    // Будет заменено на реальный URL позже
-                    console.log(`Clicked group with ID: ${group.id}`);
+        // Get group_id and name from URL path
+        const pathSegments = window.location.pathname.split('/');
+        const groupId = pathSegments[2];  // Index 2 contains group_id
+        const groupName = decodeURIComponent(pathSegments[3]);  // Index 3 contains name, need to decode for special characters
+    
+        // Update title with group name
+        document.getElementById('groupTitle').textContent = `Students of group ${groupName}`;
+    
+        // Fetch students for the group
+        async function fetchStudents() {
+            try {
+                const response = await fetch('/api/v1/get_students_by_group_id', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id_group: groupId }) // Send group ID in the request body
                 });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                populateTable(data);
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+
+        function populateTable(students) {
+            const tableBody = document.getElementById('studentsTable').querySelector('tbody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.full_name}</td>
+                `;
                 tableBody.appendChild(row);
             });
         }
 
-        async function fetchGroups() {
-            try {
-                const response = await fetch('/api/v1/get_groups');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                return data.groups; // Согласно документации API
-            } catch (error) {
-                console.error('Error fetching groups:', error);
-                return [];
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const groups = await fetchGroups();
-            populateTable(groups);
-        });
+        // Call the fetchStudents function to load data
+        fetchStudents();
     </script>
 </body>
 </html>

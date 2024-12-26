@@ -345,5 +345,3 @@ Error responses follow this format:
 {
     "message": "Error description"
 }
-```
-```
