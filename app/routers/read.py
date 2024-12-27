@@ -219,7 +219,7 @@ async def get_student_attendance_statistics(model: GetStudentAttendance, db: Ses
         return JSONResponse(content={"message": str(ex)}, status_code=500)
         
 
-@router.post("/api/v1/get_attendance_by_subject")
+@router.post("/api/v1/get_attendance_by_subject/{subject.id}")
 async def get_attendance_by_subject(subject_id: int, db: Session = Depends(get_db)):
     try:
         # Получаем общее количество посещений для данного предмета
@@ -233,6 +233,7 @@ async def get_attendance_by_subject(subject_id: int, db: Session = Depends(get_d
         
         # В��числяем процент присутствий
         present_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+        teacher = db.query(Teacher.first_name, Teacher.middle_name, Teacher.last_name).select_from(Subject).join(Teacher).filter(Subject.id == subject_id).first()
         
         result = {
             "total_attendance": total_attendance,
