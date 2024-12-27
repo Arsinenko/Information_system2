@@ -1,0 +1,200 @@
+<html>
+<head>
+    <title>Create Group Attendance Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            margin: 0;
+            display: flex;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+        }
+        .content h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #63b3ed;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #4a5568;
+        }
+        th {
+            background-color: #2d3748;
+            color: #63b3ed;
+        }
+        td {
+            background-color: #2d3748;
+            cursor: pointer;
+        }
+        td:hover {
+            background-color: #4a5568;
+        }
+        .submit-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #63b3ed;
+            color: #1a202c;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #4299e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Group Attendance Report</h1>
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <button class="submit-btn" onclick="submitReport()">Submit Report</button>
+    </div>
+
+    <script>
+        let scheduleId = null;
+        let students = [];
+
+        // Get parameters from URL
+        const pathParts = window.location.pathname.split('/');
+        const date = pathParts[pathParts.length - 3];
+        const lessonNumber = parseInt(pathParts[pathParts.length - 2]);
+        const groupId = parseInt(pathParts[pathParts.length - 1]);
+
+        // First, get schedule_id
+        async function initialize() {
+            try {
+                console.log('Fetching schedule data for date:', date, 'lesson:', lessonNumber, 'group:', groupId);
+                
+                const scheduleResponse = await fetch('/api/v1/get_schedule_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date: date,
+                        lesson_number: lessonNumber,
+                        id_group: groupId
+                    })
+                });
+                
+                const scheduleData = await scheduleResponse.json();
+                console.log('Schedule response:', scheduleData);
+                
+                // Извлекаем schedule_id из ответа
+                scheduleId = JSON.parse(scheduleData.message.replace(/'/g, '"')).schedule_id;
+
+                console.log('Fetching students for group:', groupId);
+
+                // Then get students for this group
+                const studentsResponse = await fetch('/api/v1/get_students_by_group_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_group: groupId
+                    })
+                });
+                
+                const studentsData = await studentsResponse.json();
+                console.log('Students response:', studentsData);
+                
+                students = studentsData.message;
+                
+                if (students && students.length > 0) {
+                    console.log('Found students:', students);
+                    populateTable();
+                } else {
+                    console.error('No students found in response');
+                }
+            } catch (error) {
+                console.error('Error during initialization:', error);
+            }
+        }
+
+        function populateTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.last_name} ${student.first_name} ${student.middle_name}</td>
+                    <td onclick="toggleStatus(this)" data-student-id="${student.id}">П</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function toggleStatus(cell) {
+            cell.textContent = cell.textContent === 'П' ? 'Н' : 'П';
+        }
+
+        async function submitReport() {
+            const attendanceData = [];
+            const rows = document.querySelectorAll('#tableBody tr');
+            
+            rows.forEach(row => {
+                const studentId = row.querySelector('td:nth-child(3)').getAttribute('data-student-id');
+                const status = row.querySelector('td:nth-child(3)').textContent;
+                
+                attendanceData.push({
+                    id_schedule: scheduleId,
+                    id_student: parseInt(studentId),
+                    status: status === 'П' ? 'present' : 'absent'
+                });
+            });
+
+            try {
+                for (const attendance of attendanceData) {
+                    const response = await fetch('/api/v1/create_attendance', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(attendance)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to submit attendance for student ${attendance.id_student}`);
+                    }
+                }
+                
+                alert('Report submitted successfully!');
+                window.location.href = '/groups';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error submitting report: ' + error.message);
+            }
+        }
+
+        // Initialize the page
+        initialize();
+    </script>
+</body>
+</html>

@@ -114,3 +114,8 @@ class GetStudentsByGroup(BaseModel):
     
 class GetStudentAttendance(BaseModel):
     id_student: int
+    
+class GetScheduleIdModel(BaseModel):
+    date: str
+    lesson_number: int
+    id_group: int

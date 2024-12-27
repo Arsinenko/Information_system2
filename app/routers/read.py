@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from app.Models.create_models import *
 from app.database import get_db
-from app.schemas.schemas import GetStudentsByGroup, GetStudentAttendance
+from app.schemas.schemas import GetStudentsByGroup, GetStudentAttendance, GetScheduleIdModel
 
 router = APIRouter()
 
@@ -280,7 +280,18 @@ async def get_attendance_by_all_subjects(db: Session = Depends(get_db)):
     except Exception as ex:
         return JSONResponse(content={"message": str(ex)}, status_code=500)
         
-
+@router.post("/api/v1/get_schedule_id")
+async def get_schedule_id(model: GetScheduleIdModel, db: Session = Depends(get_db)):
+    try:
+        schedule_id = db.query(Schedule).filter(Schedule.date_of_lesson == model.date, Schedule.lesson_number == model.lesson_number, Schedule.id_group == model.id_group).first()
+        result = {
+            "schedule_id": schedule_id.id,
+            "group_id": schedule_id.id_group
+        }
+        return JSONResponse(content={"message": str(result)}, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"error": str(ex)}, status_code=500)
+        
         
 
         

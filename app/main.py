@@ -70,6 +70,9 @@ async def create_specialization_page():
 async def create_report_page():
     return FileResponse("app/ui/create_report.html")
 
+@app.get("/create_group_attendance_report/{date}/{lesson_number}/{id_group}")
+async def create_group_attendance_report(date: str, lesson_number: int):
+    return FileResponse("app/ui/create_group_attendance_report.html", media_type="text/html")
 
 
     
