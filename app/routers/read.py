@@ -104,8 +104,32 @@ def get_teachers(db: Session = Depends(get_db)):
 @router.get("/api/get_subjects")
 async def get_subjects(db: Session = Depends(get_db)):
     try:
-        subjects = db.query(Subject).all()
-        result = [{"id": subject.id, "name": subject.name} for subject in subjects]
+        subjects_attendance = (
+            db.query(
+                Subject.id,
+                Subject.name,
+                func.count(Attendance.id).label("total_attendance"),
+                func.sum(case((Attendance.status == "present", 1), else_=0)).label("present_count")
+            )
+            .outerjoin(Schedule, Schedule.id_subject == Subject.id)
+            .outerjoin(Attendance, Attendance.id_schedule == Schedule.id)
+            .group_by(Subject.id, Subject.name)
+            .all()
+        )
+
+        result = []
+        for subject in subjects_attendance:
+            total_attendance = subject.total_attendance
+            present_count = subject.present_count
+            present_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+            
+            result.append({
+                "subject_id": subject.id,
+                "subject_name": subject.name,
+                "total_attendance": total_attendance,
+                "present_count": present_count,
+                "present_percentage": round(present_percentage, 2)
+            })
         return JSONResponse(content={"message": result}, status_code=200)
     except Exception as ex:
         return JSONResponse(content={"message": str(ex)}, status_code=500)
@@ -190,6 +214,67 @@ async def get_student_attendance_statistics(model: GetStudentAttendance, db: Ses
                 } for subject in subjects_attendance
             ]
         }
+        return JSONResponse(content=result, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)
+        
+
+@router.post("/api/v1/get_attendance_by_subject")
+async def get_attendance_by_subject(subject_id: int, db: Session = Depends(get_db)):
+    try:
+        # Получаем общее количество посещений для данного предмета
+        total_attendance = db.query(Attendance).join(Schedule).filter(Schedule.id_subject == subject_id).count()
+        
+        # Получаем количество присутствий
+        present_count = db.query(Attendance).join(Schedule).filter(
+            Schedule.id_subject == subject_id,
+            Attendance.status == "present"
+        ).count()
+        
+        # В��числяем процент присутствий
+        present_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+        
+        result = {
+            "total_attendance": total_attendance,
+            "present_count": present_count,
+            "present_percentage": round(present_percentage, 2)
+        }
+        
+        return JSONResponse(content=result, status_code=200)
+    except Exception as ex:
+        return JSONResponse(content={"message": str(ex)}, status_code=500)
+        
+
+@router.get("/api/v1/get_attendance_by_all_subjects")
+async def get_attendance_by_all_subjects(db: Session = Depends(get_db)):
+    try:
+        subjects_attendance = (
+            db.query(
+                Subject.id,
+                Subject.name,
+                func.count(Attendance.id).label("total_attendance"),
+                func.sum(case((Attendance.status == "present", 1), else_=0)).label("present_count")
+            )
+            .outerjoin(Schedule, Schedule.id_subject == Subject.id)
+            .outerjoin(Attendance, Attendance.id_schedule == Schedule.id)
+            .group_by(Subject.id, Subject.name)
+            .all()
+        )
+
+        result = []
+        for subject in subjects_attendance:
+            total_attendance = subject.total_attendance
+            present_count = subject.present_count
+            present_percentage = (present_count / total_attendance * 100) if total_attendance > 0 else 0
+            
+            result.append({
+                "subject_id": subject.id,
+                "subject_name": subject.name,
+                "total_attendance": total_attendance,
+                "present_count": present_count,
+                "present_percentage": round(present_percentage, 2)
+            })
+
         return JSONResponse(content=result, status_code=200)
     except Exception as ex:
         return JSONResponse(content={"message": str(ex)}, status_code=500)
