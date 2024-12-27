@@ -66,6 +66,11 @@ async def create_teacher_page():
 async def create_specialization_page():
     return FileResponse("app/ui/create_specialization.html")
 
+@app.get("/create_report")
+async def create_report_page():
+    return FileResponse("app/ui/create_report.html")
+
+
 
     
 
